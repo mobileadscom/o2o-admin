@@ -30,6 +30,34 @@
       </div>
       <div class="tab-content" v-if="currentTab==2" :key="2">
         <div class="tab-content-title">GET COUPON INFO</div>
+        <form @submit="getCoupon">
+          <mini-input type="text" label="Coupon Code" v-model="couponCode" id="couponCode" maxlength="100" color="#4285F4" fontColor="#444444" :error="couponCodeError"></mini-input>
+          <button class="primary" type="submit" v-if="!couponSubmitting" style="padding: 8px 20px;margin-left: 20px;">SUBMIT</button>
+          <div class="form-loader" v-if="couponSubmitting"></div>
+        </form>
+        <div class="coupon-info-wrapper">
+          <div class="queryMsg" :class={error:couponQueryError} v-html="couponQueryMsg"></div>
+          <div class="coupon-info-property-wrapper">
+            <div class="coupon-info shadow-1" v-if="couponInfo.group">
+              <div class="coupon-info-property" v-if="couponInfo.claimed">claimed: {{couponInfo.claimed}}</div>
+              <div class="coupon-info-property">group: {{couponInfo.group}}</div>
+              <div class="coupon-info-property">owner: {{couponInfo.owner}}</div>
+              <div class="coupon-info-property">redeemed: {{couponInfo.redeemed}}</div>
+              <div v-if="couponUserInfo.length > 0">
+                <div class="coupon-info-property" style="margin-bottom: -2px; padding-bottom: 0px;">owner info:</div>
+                <div class="user-info-wrapper">
+                  <div v-for="(val, key) in couponUserInfo" :key="key" class="user-info shadow-1">
+                    <div class="user-info-property">User Id: {{val.id}}</div>
+                    <div class="user-info-property" :id="'couponTwitter' + key">Twitter Name: {{val.twitterName}}</div>
+                    <div class="user-info-property">Coupon Code: {{val.couponCode}}</div>
+                    <div class="user-info-property">source: {{val.source}}</div>
+                    <div class="user-info-property">state: {{val.state}}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </transition-group>
     </div>
@@ -56,7 +84,14 @@ export default {
       userIdError: '',
       userQueryMsg: '',
       userQueryError: false,
-      userInfo: []
+      userInfo: [],
+      couponCode: '',
+      couponCodeError: '',
+      couponSubmitting: false,
+      couponQueryMsg: '',
+      couponQueryError: false,
+      couponInfo: {},
+      couponUserInfo: []
     }
   },
   methods: {
@@ -72,7 +107,6 @@ export default {
             id: userId
           }
         }).then((response) => {
-          console.log(response);
           this.userSubmitting = false;
           if (response.data.user.length > 0) {
             this.userInfo = response.data.user;
@@ -96,6 +130,7 @@ export default {
     getUser(event) {
       event.preventDefault();
       if (this.userId) {
+        this.userIdError = '';
         this.userSubmitting = true;
         if (this.userId.indexOf('@') > 0) {
           // email
@@ -111,7 +146,6 @@ export default {
               id: this.userId
             })
             .then((res) => {
-              console.log(res);
               this.getUser2(res.data.id).then((response) => {
                 if (response.length > 0) {
                   this.userQueryMsg = `User Found! <br>Twitter Name: ${res.data.screen_name}`;
@@ -141,7 +175,54 @@ export default {
       else {
         this.userIdError = 'User Id is empty.'
       }
-    }
+    },
+    getCoupon(event) {
+      event.preventDefault();
+      if (this.couponCode) {
+        this.couponCodeError = '';
+        axios.get(this.apiDomain + '/coupons/o2o/check_coupon', {
+          params: {
+            couponCode: this.couponCode
+          }
+        }).then((response) => {
+          if (response.data.message == 'retrieved.') {
+            this.couponQueryError = false;
+            this.couponQueryMsg = 'Coupon Found!'
+            this.couponInfo = Object.assign({}, response.data.coupon);
+            if (response.data.user.length > 0) {
+              for (var u = 0; u < response.data.user.length; u++) {
+                response.data.user[u].twitterName = 'loading...';
+              }
+            this.couponUserInfo = response.data.user;
+              axios.post(this.functionsDomain + '/getTwitterName', {
+                id: this.couponUserInfo[0].id
+              }).then((res) => {
+                for (var i = 0; i < response.data.user.length; i++) {
+                  this.couponUserInfo[i].twitterName = res.data.screen_name;
+                  document.getElementById('couponTwitter' + i.toString()).innerHTML = 'Twitter Name: ' + res.data.screen_name;
+                }
+              }).catch((err) => {
+                console.error(err);
+              })
+
+            }
+            else {
+              this.couponUserInfo = [];
+            }
+          }
+          else {
+            this.couponInfo = {};
+            this.couponQueryError = true;
+            this.couponQueryMsg = 'Coupon Not Found';
+          }
+        }).catch((error) => {
+          console.error(error);
+        })
+      }
+      else {
+        this.couponCodeError = 'Coupon Code is empty.'
+      }
+    },
   }
 }
 </script>
@@ -233,18 +314,22 @@ export default {
     color: red;
   }
 
-  .user-info-wrapper {
+  .user-info-wrapper, .coupon-info-wrapper {
     margin: 15px;
   }
 
-  .user-info {
+  .user-info, .coupon-info {
     margin: 5px 5px 15px;
-    padding: 10px;
+    padding: 4px 10px;
     background-color: #fafafa;
   }
 
-  .user-info-property {
-    margin-bottom: 5px;
+  .user-info-property, .coupon-info-property {
+    padding: 2px;
+  }
+
+  .coupon-info .user-info {
+    background-color: white;
   }
 </style>
 
