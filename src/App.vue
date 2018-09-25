@@ -107,6 +107,22 @@ button.primary:active, button.secondary:active {
   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 }
 
+.secondary {
+  display: inline-block;
+  padding: 4px 12px 6px;
+  background-color: #6a5acd;
+  color: white;
+  font-size: 14px;
+  border-radius: 2px;
+  -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+
+.secondary:hover {
+  cursor: pointer;
+  background-color: #51449d;
+}
+
 @-webkit-keyframes spin {
   0% { -webkit-transform: rotate(0deg); }
   100% { -webkit-transform: rotate(360deg); }
@@ -129,5 +145,21 @@ button.primary:active, button.secondary:active {
   transform: none;
   border: 5px solid #94E2EF;
   border-top: 5px solid #1DA1F2;
+}
+
+.small-loader {
+  border-radius: 50%;
+  margin: auto;
+  -webkit-animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite;
+  width: 30px;
+  height: 30px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  position: static;
+  -webkit-transform: none;
+  transform: none;
+  border: 3px solid #94E2EF;
+  border-top: 3px solid #1DA1F2;
 }
 </style>

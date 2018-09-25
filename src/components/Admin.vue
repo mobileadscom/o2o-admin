@@ -20,9 +20,13 @@
             <div class="queryMsg" :class={error:userQueryError} v-html="userQueryMsg"></div>
             <div v-for="(val, key) in userInfo" :key="key" class="user-info shadow-1">
               <div class="user-info-property">User Id: {{val.id}}</div>
-              <div class="user-info-property">Coupon Code: {{val.couponCode}}</div>
-              <div class="user-info-property">source: {{val.source}}</div>
-              <div class="user-info-property" style="margin-bottom: 0px;">state: {{val.state}}</div>
+              <div class="user-info-property" :class="{reissued: val.reissued}">Coupon Code: <span v-html="val.couponLink"></span></div>
+              <div class="user-info-property">Source: {{val.source}}</div>
+              <div class="user-info-property">State: {{val.state}}</div>
+              <div class="secondary" v-if="val.state == 'win' && !val.reissued && !val.reissuing" @click="reissueCoupon(key)" style="margin: 4px 0px;">Reissue Coupon</div>
+              <div class="small-loader" v-if="val.reissuing" style="margin: 4px 0px;"></div>
+              <div class="user-info-property" v-if="val.reissued" v-html="val.reissueResult">
+              </div>
             </div>
           </div>
         </form>
@@ -49,9 +53,9 @@
                   <div v-for="(val, key) in couponUserInfo" :key="key" class="user-info shadow-1">
                     <div class="user-info-property">User Id: {{val.id}}</div>
                     <div class="user-info-property" :id="'couponTwitter' + key">Twitter Name: {{val.twitterName}}</div>
-                    <div class="user-info-property">Coupon Code: {{val.couponCode}}</div>
-                    <div class="user-info-property">source: {{val.source}}</div>
-                    <div class="user-info-property">state: {{val.state}}</div>
+                    <div class="user-info-property">Coupon Code: <span v-html="val.couponLink"></span></div>
+                    <div class="user-info-property">Source: {{val.source}}</div>
+                    <div class="user-info-property">State: {{val.state}}</div>
                   </div>
                 </div>
               </div>
@@ -109,6 +113,18 @@ export default {
         }).then((response) => {
           this.userSubmitting = false;
           if (response.data.user.length > 0) {
+            for (var r = 0; r < response.data.user.length; r++) {
+              response.data.user[r].reissuing = false;
+              response.data.user[r].reissued = false;
+              response.data.user[r].reissueResult = '';
+              if (response.data.user[r].state == 'win') {
+                var couponLink = this.generateCouponLink(response.data.user[r].id, response.data.user[r].source);
+                response.data.user[r].couponLink = `<a href="${couponLink}" target="_blank"> ${response.data.user[r].couponCode}</a>`;
+              }
+              else {
+                response.data.user[r].couponLink = '';
+              }
+            }
             this.userInfo = response.data.user;
             this.userQueryMsg = 'User Found!';
             this.userQueryError = false;
@@ -176,6 +192,37 @@ export default {
         this.userIdError = 'User Id is empty.'
       }
     },
+    generateCouponLink(userId, source) {
+      return 'https://s3.amazonaws.com/rmarepo/o2o/%E3%83%9C%E3%83%87%E3%82%A3%E3%83%A1%E3%83%B3%E3%83%86%E3%83%89%E3%83%AA%E3%83%B3%E3%82%AF/coupon.html?userId=' + userId + '&source=' + source;
+    },
+    reissueCoupon(k) {
+      this.userInfo[k].reissuing = true;
+/*      setTimeout(() => {
+        this.userInfo[k].reissuing = false;
+        this.userInfo[k].reissued = true;
+        this.userInfo[k].reissueResult = 'Coupon Reissued!'
+        this.userInfo[k].couponLink = 'new'
+      }, 1000);*/
+      var userId = this.userInfo[k].id;
+      var source = this.userInfo[k].source;
+      // var group = this.userInfo[k].source == 'CircleK' ? 'B' : 'A';
+      var group = 'A';
+      axios.post(this.apiDomain + `/coupons/o2o/reissue?id=${userId}&source=${source}&group=${group}`).then((response) => {
+        if (response.data.status) {
+          this.userInfo[k].reissuing = false;
+          this.userInfo[k].reissued = true;
+          this.userInfo[k].reissueResult = 'Coupon Reissued!'
+          var couponLink = this.generateCouponLink(this.userInfo[k].id, this.userInfo[k].source);
+          this.userInfo[k].couponLink = `<a href="${couponLink}" target="_blank"> ${response.data.newCouponCode}</a>`;
+        }
+        else {
+          this.userInfo[k].reissuing = false;
+        }
+      }).catch((error) => {
+        console.error(error);
+        this.userInfo[k].reissuing = false;
+      })
+    },
     getCoupon(event) {
       event.preventDefault();
       if (this.couponCode) {
@@ -192,6 +239,13 @@ export default {
             if (response.data.user.length > 0) {
               for (var u = 0; u < response.data.user.length; u++) {
                 response.data.user[u].twitterName = 'loading...';
+                if (response.data.user[u].state == 'win') {
+                  var couponLink = this.generateCouponLink(response.data.user[u].id, response.data.user[u].source);
+                  response.data.user[u].couponLink = `<a href="${couponLink}" target="_blank"> ${response.data.user[u].couponCode}</a>`;
+                }
+                else {
+                  response.data.user[u].couponLink = '';
+                }
               }
             this.couponUserInfo = response.data.user;
               axios.post(this.functionsDomain + '/getTwitterName', {
@@ -326,10 +380,15 @@ export default {
 
   .user-info-property, .coupon-info-property {
     padding: 2px;
+    transition: all 0.3s;
   }
 
   .coupon-info .user-info {
     background-color: white;
+  }
+
+  .reissued {
+    background-color: #7fff00;
   }
 </style>
 
