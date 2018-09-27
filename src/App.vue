@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div class="header">
-      <div class="title">O2O Admin</div>
+      <div class="title">BodyMainte Admin</div>
     </div>
     <div class="content">
       <router-view/>

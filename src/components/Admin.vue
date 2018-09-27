@@ -1,8 +1,8 @@
 <template>
-<div>
-  <div class="campaignInfo">
+<div style="padding-top: 30px;">
+  <!-- <div class="campaignInfo">
     <div>Campaign: {{campaignName}}</div>
-  </div>
+  </div> -->
   <div class="main-wrapper shadow-1">
     <div class="tab-container">
       <div @click="currentTab=1" :class="{active:currentTab == 1}">USER</div>
@@ -43,7 +43,7 @@
           <div class="queryMsg" :class={error:couponQueryError} v-html="couponQueryMsg"></div>
           <div class="coupon-info-property-wrapper">
             <div class="coupon-info shadow-1" v-if="couponInfo.group">
-              <div class="coupon-info-property" v-if="couponInfo.claimed">claimed: {{couponInfo.claimed}}</div>
+              <div class="coupon-info-property">claimed: {{couponInfo.claimed}}</div>
               <div class="coupon-info-property">group: {{couponInfo.group}}</div>
               <div class="coupon-info-property">owner: {{couponInfo.owner}}</div>
               <div class="coupon-info-property">redeemed: {{couponInfo.redeemed}}</div>
@@ -235,6 +235,9 @@ export default {
           if (response.data.message == 'retrieved.') {
             this.couponQueryError = false;
             this.couponQueryMsg = 'Coupon Found!'
+            if (!response.data.coupon.claimed) {
+              response.data.coupon.claimed = false;
+            }
             this.couponInfo = Object.assign({}, response.data.coupon);
             if (response.data.user.length > 0) {
               for (var u = 0; u < response.data.user.length; u++) {
@@ -247,7 +250,7 @@ export default {
                   response.data.user[u].couponLink = '';
                 }
               }
-            this.couponUserInfo = response.data.user;
+              this.couponUserInfo = response.data.user;
               axios.post(this.functionsDomain + '/getTwitterName', {
                 id: this.couponUserInfo[0].id
               }).then((res) => {
