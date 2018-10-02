@@ -83,6 +83,11 @@ export default {
       functionsDomain: 'https://us-central1-familymarto2o.cloudfunctions.net/twitter',
       apiDomain: 'https://api.mobileads.com',
       currentTab: 1,
+      campaignId:'ca8ca8c34a363fa07b2d38d007ca55c6',
+      adUserId: '4441',
+      rmaId: '1',
+      generalUrl: 'https://track.richmediaads.com/a/analytic.htm?rmaId={{rmaId}}&domainId=0&pageLoadId={{cb}}&userId={{adUserId}}&pubUserId=0&campaignId={{campaignId}}&callback=trackSuccess&type={{type}}&value={{value}}&uniqueId={{userId}}&customId={{source}}',
+      timestamp: Date.now(),
       userId: '',
       userSubmitting: false,
       userIdError: '',
@@ -99,6 +104,14 @@ export default {
     }
   },
   methods: {
+    trackReissue(userId, oldCoupon, newCoupon, source) {
+      var trackingUrl = this.generalUrl.replace('{{rmaId}}', this.rmaId).replace('{{campaignId}}', this.campaignId).replace('{{adUserId}}', this.adUserId).replace('{{cb}}', this.timestamp.toString());
+      var type = 'coupon_reissue';
+      var value = `${userId}_${oldCoupon}_${newCoupon}`;
+      var url = trackingUrl.replace('{{type}}', type).replace('{{value}}', value).replace('{{userId}}', userId).replace('{{source}}', source);
+      // return axios.get(url);
+      console.log(url);
+    },
     getUserError() {
       this.userSubmitting = false;
       this.userQueryMsg = 'Error getting user info';
@@ -211,9 +224,11 @@ export default {
         if (response.data.status) {
           this.userInfo[k].reissuing = false;
           this.userInfo[k].reissued = true;
-          this.userInfo[k].reissueResult = 'Coupon Reissued!'
+          this.userInfo[k].reissueResult = 'Coupon Reissued!';
+          this.trackReissue(userId, this.userInfo[k].couponCode, response.data.newCouponCode, source);
           var couponLink = this.generateCouponLink(this.userInfo[k].id, this.userInfo[k].source);
           this.userInfo[k].couponLink = `<a href="${couponLink}" target="_blank"> ${response.data.newCouponCode}</a>`;
+          this.userInfo[k].couponCode = response.data.newCouponCode;
         }
         else {
           this.userInfo[k].reissuing = false;
