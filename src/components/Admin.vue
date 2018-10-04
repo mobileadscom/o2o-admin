@@ -13,13 +13,14 @@
       <div class="tab-content" v-if="currentTab==1" :key="1">
         <div class="tab-content-title">GET USER INFO</div>
         <form @submit="getUser">
-          <mini-input type="text" label="User Id" v-model="userId" id="userId" maxlength="100" color="#4285F4" fontColor="#444444" :error="userIdError"></mini-input>
+          <mini-input type="text" label="Twitter Id" v-model="userId" id="userId" maxlength="100" color="#4285F4" fontColor="#444444" :error="userIdError"></mini-input>
           <button class="primary" type="submit" v-if="!userSubmitting" style="padding: 8px 20px;margin-left: 20px;">SUBMIT</button>
           <div class="form-loader" v-if="userSubmitting"></div>
           <div class="user-info-wrapper">
             <div class="queryMsg" :class={error:userQueryError} v-html="userQueryMsg"></div>
             <div v-for="(val, key) in userInfo" :key="key" class="user-info shadow-1">
-              <div class="user-info-property">User Id: {{val.id}}</div>
+              <div class="user-info-property">Twitter Id: {{val.id}}</div>
+              <div class="user-info-property">Registered On: {{val.formattedDate}}</div>
               <div class="user-info-property" :class="{reissued: val.reissued}">Coupon Code: <span v-html="val.couponLink"></span></div>
               <div class="user-info-property">Source: {{val.source}}</div>
               <div class="user-info-property">State: {{val.state}}</div>
@@ -43,15 +44,17 @@
           <div class="queryMsg" :class={error:couponQueryError} v-html="couponQueryMsg"></div>
           <div class="coupon-info-property-wrapper">
             <div class="coupon-info shadow-1" v-if="couponInfo.group">
-              <div class="coupon-info-property">claimed: {{couponInfo.claimed}}</div>
-              <div class="coupon-info-property">group: {{couponInfo.group}}</div>
-              <div class="coupon-info-property">owner: {{couponInfo.owner}}</div>
-              <div class="coupon-info-property">redeemed: {{couponInfo.redeemed}}</div>
+              <div class="coupon-info-property">Claimed: {{couponInfo.claimed}}</div>
+              <div class="coupon-info-property">Group: {{couponInfo.group}}</div>
+              <div class="coupon-info-property">Owner: {{couponInfo.owner}}</div>
+              <div class="coupon-info-property">Issued: {{couponInfo.redeemed}}</div>
+              <div class="coupon-info-property">Issued On: {{couponInfo.formattedDate}}</div>
               <div v-if="couponUserInfo.length > 0">
-                <div class="coupon-info-property" style="margin-bottom: -2px; padding-bottom: 0px;">owner info:</div>
+                <div class="coupon-info-property" style="margin-bottom: -2px; padding-bottom: 0px;">Owner info:</div>
                 <div class="user-info-wrapper">
                   <div v-for="(val, key) in couponUserInfo" :key="key" class="user-info shadow-1">
-                    <div class="user-info-property">User Id: {{val.id}}</div>
+                    <div class="user-info-property">Twitter Id: {{val.id}}</div>
+                    <div class="user-info-property">Registered On: {{val.formattedDate}}</div>
                     <div class="user-info-property" :id="'couponTwitter' + key">Twitter Name: {{val.twitterName}}</div>
                     <div class="user-info-property">Coupon Code: <span v-html="val.couponLink"></span></div>
                     <div class="user-info-property">Source: {{val.source}}</div>
@@ -83,9 +86,9 @@ export default {
       functionsDomain: 'https://us-central1-familymarto2o.cloudfunctions.net/twitter',
       apiDomain: 'https://api.mobileads.com',
       currentTab: 1,
-      campaignId:'ca8ca8c34a363fa07b2d38d007ca55c6',
-      adUserId: '4441',
-      rmaId: '1',
+      campaignId:'634501954374a87c6b6f4dde00493ded',
+      adUserId: '4831',
+      rmaId: '3',
       generalUrl: 'https://track.richmediaads.com/a/analytic.htm?rmaId={{rmaId}}&domainId=0&pageLoadId={{cb}}&userId={{adUserId}}&pubUserId=0&campaignId={{campaignId}}&callback=trackSuccess&type={{type}}&value={{value}}&uniqueId={{userId}}&customId={{source}}',
       timestamp: Date.now(),
       userId: '',
@@ -104,13 +107,24 @@ export default {
     }
   },
   methods: {
+    formatDate(time) {
+      var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      var date = new Date(time);
+      console.log(date);
+      var day = (date.getDate()).toString();
+      var month = months[date.getMonth()].toString();
+      var year = (date.getFullYear()).toString();
+      var hours = (date.getHours()).toString();
+      var minutes = (date.getMinutes()).toString();
+      minutes = minutes.length < 2 ? '0' + minutes : minutes;
+      return `${day}-${month}-${year} ${hours}:${minutes}`;
+    },
     trackReissue(userId, oldCoupon, newCoupon, source) {
       var trackingUrl = this.generalUrl.replace('{{rmaId}}', this.rmaId).replace('{{campaignId}}', this.campaignId).replace('{{adUserId}}', this.adUserId).replace('{{cb}}', this.timestamp.toString());
       var type = 'coupon_reissue';
       var value = `${userId}_${oldCoupon}_${newCoupon}`;
       var url = trackingUrl.replace('{{type}}', type).replace('{{value}}', value).replace('{{userId}}', userId).replace('{{source}}', source);
-      // return axios.get(url);
-      console.log(url);
+      return axios.get(url);
     },
     getUserError() {
       this.userSubmitting = false;
@@ -137,6 +151,7 @@ export default {
               else {
                 response.data.user[r].couponLink = '';
               }
+              response.data.user[r].formattedDate = this.formatDate(response.data.user[r].dateCreated);
             }
             this.userInfo = response.data.user;
             this.userQueryMsg = 'User Found!';
@@ -218,8 +233,7 @@ export default {
       }, 1000);*/
       var userId = this.userInfo[k].id;
       var source = this.userInfo[k].source;
-      // var group = this.userInfo[k].source == 'CircleK' ? 'B' : 'A';
-      var group = 'A';
+      var group = this.userInfo[k].source == 'CircleK' ? 'B' : 'A';
       axios.post(this.apiDomain + `/coupons/o2o/reissue?id=${userId}&source=${source}&group=${group}`).then((response) => {
         if (response.data.status) {
           this.userInfo[k].reissuing = false;
@@ -253,6 +267,7 @@ export default {
             if (!response.data.coupon.claimed) {
               response.data.coupon.claimed = false;
             }
+            response.data.coupon.formattedDate = this.formatDate(response.data.coupon.date);
             this.couponInfo = Object.assign({}, response.data.coupon);
             if (response.data.user.length > 0) {
               for (var u = 0; u < response.data.user.length; u++) {
@@ -264,6 +279,7 @@ export default {
                 else {
                   response.data.user[u].couponLink = '';
                 }
+                response.data.user[u].formattedDate = this.formatDate(response.data.user[u].dateCreated);
               }
               this.couponUserInfo = response.data.user;
               axios.post(this.functionsDomain + '/getTwitterName', {
@@ -400,7 +416,13 @@ export default {
     padding: 2px;
     transition: all 0.3s;
   }
+/*.user-info-property:nth-child(odd), .coupon-info-property:nth-child(odd) {
+  background-color: #eee;
+}
 
+.user-info-property:nth-child(even), .coupon-info-property:nth-child(even) {
+  background-color: #ddd;
+}*/
   .coupon-info .user-info {
     background-color: white;
   }
