@@ -5,26 +5,26 @@
   </div> -->
   <div class="main-wrapper shadow-1">
     <div class="tab-container">
-      <div @click="currentTab=1" :class="{active:currentTab == 1}">USER</div>
-      <div @click="currentTab=2" :class="{active:currentTab == 2}">COUPON</div>
+      <div @click="currentTab=1" :class="{active:currentTab == 1}">{{wording.USER[lang]}}</div>
+      <div @click="currentTab=2" :class="{active:currentTab == 2}">{{wording.COUPON[lang]}}</div>
     </div>
     <div class="tab-content-wrapper">
       <transition-group name="tab-transition">
       <div class="tab-content" v-if="currentTab==1" :key="1">
-        <div class="tab-content-title">GET USER INFO</div>
+        <div class="tab-content-title">{{wording.getUserInfo[lang]}}</div>
         <form @submit="getUser">
-          <mini-input type="text" label="Twitter Id" v-model="userId" id="userId" maxlength="100" color="#4285F4" fontColor="#444444" :error="userIdError"></mini-input>
-          <button class="primary" type="submit" v-if="!userSubmitting" style="padding: 8px 20px;margin-left: 20px;">SUBMIT</button>
+          <mini-input type="text" :label="wording.twitterID[lang]" v-model="userId" id="userId" maxlength="100" color="#4285F4" fontColor="#444444" :error="userIdError"></mini-input>
+          <button class="primary" type="submit" v-if="!userSubmitting" style="padding: 8px 20px;margin-left: 20px;">{{wording.SUBMIT[lang]}}</button>
           <div class="form-loader" v-if="userSubmitting"></div>
           <div class="user-info-wrapper">
             <div class="queryMsg" :class={error:userQueryError} v-html="userQueryMsg"></div>
             <div v-for="(val, key) in userInfo" :key="key" class="user-info shadow-1">
               <div class="user-info-property">Twitter Id: {{val.id}}</div>
-              <div class="user-info-property">Registered On: {{val.formattedDate}}</div>
-              <div class="user-info-property" :class="{reissued: val.reissued}">Coupon Code: <span v-html="val.couponLink"></span></div>
-              <div class="user-info-property">Source: {{val.source}}</div>
-              <div class="user-info-property">State: {{val.state}}</div>
-              <div class="secondary" v-if="val.state == 'win' && !val.reissued && !val.reissuing" @click="reissueCoupon(key)" style="margin: 4px 0px;">Reissue Coupon</div>
+              <div class="user-info-property">{{wording.registeredOn[lang]}}: {{val.formattedDate}}</div>
+              <div class="user-info-property" :class="{reissued: val.reissued}">{{wording.couponCode[lang]}}: <span v-html="val.couponLink"></span></div>
+              <div class="user-info-property">{{wording.source[lang]}}: {{val.source}}</div>
+              <div class="user-info-property">{{wording.state[lang]}}: {{val.state}}</div>
+              <div class="secondary" v-if="val.state == 'win' && !val.reissued && !val.reissuing" @click="reissueCoupon(key)" style="margin: 4px 0px;">{{wording.reissueCoupon[lang]}}</div>
               <div class="small-loader" v-if="val.reissuing" style="margin: 4px 0px;"></div>
               <div class="user-info-property" v-if="val.reissued" v-html="val.reissueResult">
               </div>
@@ -34,31 +34,31 @@
         
       </div>
       <div class="tab-content" v-if="currentTab==2" :key="2">
-        <div class="tab-content-title">GET COUPON INFO</div>
+        <div class="tab-content-title">{{wording.getCouponInfo[lang]}}</div>
         <form @submit="getCoupon">
-          <mini-input type="text" label="Coupon Code" v-model="couponCode" id="couponCode" maxlength="100" color="#4285F4" fontColor="#444444" :error="couponCodeError"></mini-input>
-          <button class="primary" type="submit" v-if="!couponSubmitting" style="padding: 8px 20px;margin-left: 20px;">SUBMIT</button>
+          <mini-input type="text" :label="wording.couponCode[lang]" v-model="couponCode" id="couponCode" maxlength="100" color="#4285F4" fontColor="#444444" :error="couponCodeError"></mini-input>
+          <button class="primary" type="submit" v-if="!couponSubmitting" style="padding: 8px 20px;margin-left: 20px;">{{wording.SUBMIT[lang]}}</button>
           <div class="form-loader" v-if="couponSubmitting"></div>
         </form>
         <div class="coupon-info-wrapper">
           <div class="queryMsg" :class={error:couponQueryError} v-html="couponQueryMsg"></div>
           <div class="coupon-info-property-wrapper">
             <div class="coupon-info shadow-1" v-if="couponInfo.group">
-              <div class="coupon-info-property">Claimed: {{couponInfo.claimed}}</div>
-              <div class="coupon-info-property">Group: {{couponInfo.group}}</div>
-              <div class="coupon-info-property">Owner: {{couponInfo.owner}}</div>
-              <div class="coupon-info-property">Issued: {{couponInfo.redeemed}}</div>
-              <div class="coupon-info-property">Issued On: {{couponInfo.formattedDate}}</div>
+              <div class="coupon-info-property">{{wording.claimed[lang]}}: {{couponInfo.claimed}}</div>
+              <div class="coupon-info-property">{{wording.group[lang]}}: {{couponInfo.group}}</div>
+              <div class="coupon-info-property">{{wording.owner[lang]}}: {{couponInfo.owner}}</div>
+              <div class="coupon-info-property">{{wording.issued[lang]}}: {{couponInfo.redeemed}}</div>
+              <div class="coupon-info-property">{{wording.issuedOn[lang]}}: {{couponInfo.formattedDate}}</div>
               <div v-if="couponUserInfo.length > 0">
-                <div class="coupon-info-property" style="margin-bottom: -2px; padding-bottom: 0px;">Owner info:</div>
+                <div class="coupon-info-property" style="margin-bottom: -2px; padding-bottom: 0px;">{{wording.ownerInfo[lang]}}:</div>
                 <div class="user-info-wrapper">
                   <div v-for="(val, key) in couponUserInfo" :key="key" class="user-info shadow-1">
                     <div class="user-info-property">Twitter Id: {{val.id}}</div>
-                    <div class="user-info-property">Registered On: {{val.formattedDate}}</div>
-                    <div class="user-info-property" :id="'couponTwitter' + key">Twitter Name: {{val.twitterName}}</div>
-                    <div class="user-info-property">Coupon Code: <span v-html="val.couponLink"></span></div>
-                    <div class="user-info-property">Source: {{val.source}}</div>
-                    <div class="user-info-property">State: {{val.state}}</div>
+                    <div class="user-info-property">{{wording.registeredOn[lang]}}: {{val.formattedDate}}</div>
+                    <div class="user-info-property" :id="'couponTwitter' + key">{{wording.twitterName[lang]}}: {{val.twitterName}}</div>
+                    <div class="user-info-property">{{wording.couponCode[lang]}}: <span v-html="val.couponLink"></span></div>
+                    <div class="user-info-property">{{wording.source[lang]}}: {{val.source}}</div>
+                    <div class="user-info-property">{{wording.state[lang]}}: {{val.state}}</div>
                   </div>
                 </div>
               </div>
@@ -82,6 +82,106 @@ export default {
   },
   data() {
     return {
+      params: [],
+      wording: {
+        'USER': {
+          'en': 'USER',
+          'ja': 'ユーザー'
+        },
+        'COUPON': {
+          'en': 'COUPON',
+          'ja': 'クーポン'
+        },
+        'getUserInfo': {
+          'en': 'Get User Info',
+          'ja': 'ユーザー情報を確認'
+        },
+        'getCouponInfo': {
+          'en': 'Get Coupon Info',
+          'ja': 'クーポン情報を確認'
+        },
+        'SUBMIT': {
+          'en': 'SUBMIT',
+          'ja': '確認'
+        },
+        'twitterID': {
+          'en': 'Twitter ID',
+          'ja': 'Twitter ID'
+        },
+        'twitterName': {
+          'en': 'Twitter Name',
+          'ja': 'Twitter 名'
+        },
+        'registeredOn': {
+          'en': 'Registered On',
+          'ja': '登録日時'
+        },
+        'couponCode': {
+          'en': 'Coupon Code',
+          'ja': 'クーポンコード'
+        },
+        'source': {
+          'en': 'Source',
+          'ja': '店舗'
+        },
+        'state': {
+          'en': 'State',
+          'ja': '状態'
+        },
+        'reissueCoupon': {
+          'en': 'Reissue Coupon',
+          'ja': 'クーポン再発行'
+        },
+        'claimed': {
+          'en': 'Claimed',
+          'ja': 'クーポン交換'
+        },
+        'group': {
+          'en': 'Group',
+          'ja': '店舗'
+        },
+        'owner': {
+          'en': 'Owner',
+          'ja': '保有しているユーザー'
+        },
+        'issued': {
+          'en': 'Issued',
+          'ja': '発行済み'
+        },
+        'issuedOn': {
+          'en': 'Issued On',
+          'ja': '発行日時'
+        },
+        'ownerInfo': {
+          'en': 'Owner Info',
+          'ja': '所有者情報'
+        },
+        'win': {
+          'en': 'win',
+          'ja': '当選'
+        },
+        'lose': {
+          'en': 'lose',
+          'ja': '落選者'
+        },
+        'FamilyMart': {
+          'en': 'Family Mart',
+          'ja': 'ファミリーマート'
+        },
+        'CircleK': {
+          'en': 'Circle K',
+          'ja': 'CKS'
+        },
+        'exchanged': {
+          'en': 'True',
+          'ja': '交換済み'
+        },
+        'notExchanged': {
+          'en': 'False',
+          'ja': '未交換'
+        },
+      },
+      lang: 'ja',
       campaignName: 'BodyMainte',
       functionsDomain: 'https://us-central1-familymarto2o.cloudfunctions.net/twitter',
       apiDomain: 'https://api.mobileads.com',
@@ -107,10 +207,29 @@ export default {
     }
   },
   methods: {
+      getParams() {
+        var query_string = {};
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            // If first entry with this name
+            if (typeof query_string[pair[0]] === "undefined") {
+                query_string[pair[0]] = pair[1];
+            // If second entry with this name
+            } else if (typeof query_string[pair[0]] === "string") {
+                var arr = [ query_string[pair[0]], pair[1] ];
+                query_string[pair[0]] = arr;
+            // If third or later entry with this name
+            } else {
+                query_string[pair[0]].push(pair[1]);
+            }
+        } 
+        return query_string;
+    },
     formatDate(time) {
       var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       var date = new Date(time);
-      console.log(date);
       var day = (date.getDate()).toString();
       var month = months[date.getMonth()].toString();
       var year = (date.getFullYear()).toString();
@@ -130,6 +249,15 @@ export default {
       this.userSubmitting = false;
       this.userQueryMsg = 'Error getting user info';
       this.userQueryError = true;
+    },
+    translateResult(data) {
+      var translatedVariable = ['source', 'state', 'group', 'claimed']
+      for (var d in data) {
+        if (translatedVariable.indexOf(d) > -1 ) {
+          data[d] = this.wording[data[d]][this.lang];
+        }
+      }
+      return data;
     },
     getUser2(userId) {
       return new Promise ((resolve, reject) => {
@@ -152,15 +280,27 @@ export default {
                 response.data.user[r].couponLink = '';
               }
               response.data.user[r].formattedDate = this.formatDate(response.data.user[r].dateCreated);
+              response.data.user[r] = this.translateResult(response.data.user[r]);
             }
             this.userInfo = response.data.user;
-            this.userQueryMsg = 'User Found!';
+            if (this.lang == 'ja') {
+              this.userQueryMsg = 'ユーザーが存在しています';
+            }
+            else{
+              this.userQueryMsg = 'User Found!';
+            }
             this.userQueryError = false;
             resolve(this.userInfo);
           }
           else {
             this.userInfo = [];
-            this.userQueryMsg = 'User Not Found';
+            if (this.lang == 'ja') {
+              this.userQueryMsg = 'ユーザーが見つかりません';
+            }
+            else {
+              this.userQueryMsg = 'User Not Found';
+            }
+            
             this.userQueryError = true;
             resolve([]);
           }
@@ -186,13 +326,21 @@ export default {
           console.log('twitter');
           var isTwitterId = /^\d+$/.test(this.userId);
           if (!isTwitterId) {
+            if (this.userId.indexOf('@') > -1) {
+              this.userId = this.userId.replace('@', '');
+            }
             axios.post(this.functionsDomain + '/getTwitterId', {
               id: this.userId
             })
             .then((res) => {
               this.getUser2(res.data.id).then((response) => {
                 if (response.length > 0) {
-                  this.userQueryMsg = `User Found! <br>Twitter Name: ${res.data.screen_name}`;
+                  if (this.lang == 'ja') {
+                    this.userQueryMsg = `ユーザーが存在しています <br>Twitter 名: ${res.data.screen_name}`;
+                  }
+                  else {
+                    this.userQueryMsg = `User Found! <br>Twitter Name: ${res.data.screen_name}`;
+                  }
                 }
               });
             }).catch((err) => {
@@ -206,7 +354,12 @@ export default {
                 axios.post(this.functionsDomain + '/getTwitterName', {
                   id: response[0].id
                 }).then((res) => {
-                  this.userQueryMsg = `User Found! <br>Twitter Name: ${res.data.screen_name}`;
+                  if (this.lang == 'ja') {
+                    this.userQueryMsg = `ユーザーが存在しています <br>Twitter 名: ${res.data.screen_name}`;
+                  }
+                  else {
+                    this.userQueryMsg = `User Found! <br>Twitter Name: ${res.data.screen_name}`;
+                  }
                 })
               }
             }).catch((error) => {
@@ -217,20 +370,14 @@ export default {
 
       }
       else {
-        this.userIdError = 'User Id is empty.'
+        this.userIdError = 'Input is empty.'
       }
     },
     generateCouponLink(userId, source) {
-      return 'https://s3.amazonaws.com/rmarepo/o2o/%E3%83%9C%E3%83%87%E3%82%A3%E3%83%A1%E3%83%B3%E3%83%86%E3%83%89%E3%83%AA%E3%83%B3%E3%82%AF/coupon.html?userId=' + userId + '&source=' + source;
+      return 'https://couponcampaign.predelistyle.com/%E3%83%9C%E3%83%87%E3%82%A3%E3%83%A1%E3%83%B3%E3%83%86%E3%83%89%E3%83%AA%E3%83%B3%E3%82%AF/coupon.html?userId=' + userId + '&source=' + source;
     },
     reissueCoupon(k) {
       this.userInfo[k].reissuing = true;
-/*      setTimeout(() => {
-        this.userInfo[k].reissuing = false;
-        this.userInfo[k].reissued = true;
-        this.userInfo[k].reissueResult = 'Coupon Reissued!'
-        this.userInfo[k].couponLink = 'new'
-      }, 1000);*/
       var userId = this.userInfo[k].id;
       var source = this.userInfo[k].source;
       var group = this.userInfo[k].source == 'CircleK' ? 'B' : 'A';
@@ -261,13 +408,32 @@ export default {
             couponCode: this.couponCode
           }
         }).then((response) => {
-          if (response.data.message == 'retrieved.') {
+          if (response.data.coupon) {
             this.couponQueryError = false;
-            this.couponQueryMsg = 'Coupon Found!'
+            if (this.lang == 'ja') {
+              this.couponQueryMsg = 'クーポンが存在しています';
+            }
+            else {
+              this.couponQueryMsg = 'Coupon Found!';
+            }
             if (!response.data.coupon.claimed) {
               response.data.coupon.claimed = false;
             }
-            response.data.coupon.formattedDate = this.formatDate(response.data.coupon.date);
+            response.data.coupon.claimed = response.data.coupon.claimed ? 'exchanged' : 'notExchanged';
+            response.data.coupon.redeemed = response.data.coupon.redeemed ? 'Yes' : 'No';
+            if (response.data.coupon.group == 'A') {
+              response.data.coupon.group = 'FamilyMart';
+            }
+            if (response.data.coupon.group == 'B') {
+              response.data.coupon.group = 'CircleK'
+            }
+            
+            if (response.data.coupon.date) {
+              response.data.coupon.formattedDate = this.formatDate(response.data.coupon.date);
+            }
+            
+            // console.log(response.data.coupon);
+            this.translateResult(response.data.coupon);
             this.couponInfo = Object.assign({}, response.data.coupon);
             if (response.data.user.length > 0) {
               for (var u = 0; u < response.data.user.length; u++) {
@@ -279,6 +445,7 @@ export default {
                 else {
                   response.data.user[u].couponLink = '';
                 }
+                response.data.user[u] = this.translateResult(response.data.user[u]);
                 response.data.user[u].formattedDate = this.formatDate(response.data.user[u].dateCreated);
               }
               this.couponUserInfo = response.data.user;
@@ -287,7 +454,13 @@ export default {
               }).then((res) => {
                 for (var i = 0; i < response.data.user.length; i++) {
                   this.couponUserInfo[i].twitterName = res.data.screen_name;
-                  document.getElementById('couponTwitter' + i.toString()).innerHTML = 'Twitter Name: ' + res.data.screen_name;
+                  if (this.lang == 'ja') {
+                    document.getElementById('couponTwitter' + i.toString()).innerHTML = 'Twitter 名: ' + res.data.screen_name;
+                  }
+                  else{
+                    document.getElementById('couponTwitter' + i.toString()).innerHTML = 'Twitter Name: ' + res.data.screen_name;
+                  }
+                  
                 }
               }).catch((err) => {
                 console.error(err);
@@ -301,16 +474,29 @@ export default {
           else {
             this.couponInfo = {};
             this.couponQueryError = true;
-            this.couponQueryMsg = 'Coupon Not Found';
+            if (this.lang == 'ja') {
+              this.couponQueryMsg = 'クーポンは見つかりません';
+            }
+            else {
+              this.couponQueryMsg = 'Coupon Not Found';
+            }
+            
           }
         }).catch((error) => {
           console.error(error);
         })
       }
       else {
-        this.couponCodeError = 'Coupon Code is empty.'
+        this.couponCodeError = 'Input is empty.'
       }
-    },
+    }
+  },
+  mounted() {
+    this.params = this.getParams();
+    console.log(this.params);
+    if (this.params.lang) {
+      this.lang = this.params.lang == 'en' ? 'en' : 'ja' ;
+    }
   }
 }
 </script>
